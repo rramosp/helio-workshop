@@ -1,12 +1,12 @@
 # Workshop Preparation Guide for Project Developers
 
-This document provides instructions for project developers to organize and prepare the materials for our **1.5-day AI-Assisted Scientific Computing Workshop**.
+This document provides instructions for project developers to organize and prepare the materials for our **AI-Assisted Scientific Computing Workshop** (**roughly 6 hours of planned working time spread out across 1.5 days**).
 
 ## Executive Summary
 
-- **Workshop in AI-Assisted Notebook Mode**: Participants (science users) interact with the project through Jupyter notebooks by prompting an AI coding agent—rather than writing code by hand—to download and ingest data, run the project's pretrained models and artifacts (without retraining), execute modified notebooks, and validate scientific results.
+- **Workshop in AI-Assisted Notebook Mode (~6 Hours Across 1.5 Days)**: Over roughly six hours of planned working time spread across 1.5 days, participants (science users) interact with the project through Jupyter notebooks by prompting an AI coding agent—rather than writing code by hand—to download and ingest data, run the project's pretrained models and artifacts (without retraining), execute modified notebooks, and validate scientific results.
 - **The Three Deliverables Each Team Must Prepare ([Section 3](#3-planning-workshop-materials))**:
-  1. **Scientific Goals & Data/Compute Requirements ([§3.1](#31-deliverable-1-scientific-goals-benchmark-cases--hybrid-dataartifact-architecture))**: Define the operational and scientific learning goals for participants along with data volume and compute estimates for both project-provided and participant-brought datasets.
+  1. **Scientific Goals & Data/Compute Requirements ([§3.1](#31-deliverable-1-scientific-goals-benchmark-cases--hybrid-dataartifact-architecture))**: Define the operational and scientific learning goals achievable within the ~6-hour workshop timeframe, along with data volume and compute estimates for both project-provided and participant-brought datasets.
   2. **Workshop Notebooks List ([§3.2](#32-deliverable-2-list-of-notebooks-to-be-developed-and-organized))**: Provide a numbered sequence of modular, pre-executed Jupyter notebooks (`01_`, `02_`, ...) together with a brief explanation of what each one would do (not the actual notebook, just the list and description).
   3. **Draft Participant Guide & Prompt Examples ([§3.3](#33-deliverable-3-draft-participant-guide--how-to-interact-with-notebooks--prompt-the-coding-agent))**: Prepare an initial draft of `participant-guide.md` outlining practical workflow guidelines and preliminary prompt examples showing how science users will direct the coding agent across the workshop modules (to be refined into the final guide once the notebooks are built).
 
@@ -33,7 +33,7 @@ The primary goal of the workshop is **operational and scientific**: enabling sci
 
 > [!IMPORTANT]
 > **Inference & Analysis Only — No Model Retraining:**
-> Science users **do not train or retrain machine learning models** during the workshop. Retraining models introduces heavy compute bottlenecks, hyperparameter tuning distractions, and training-pipeline complexity that divert time away from scientific exploration.
+> Science users **do not train or retrain machine learning models** during the workshop. Because total planned working time is roughly **six hours spread out over 1.5 days**, retraining models would introduce heavy compute bottlenecks, hyperparameter tuning distractions, and training-pipeline complexity that divert time away from scientific exploration.
 >
 > Instead, all workshop notebooks and participant projects treat the project's models and artifacts as **operational scientific instruments**. Participants use the coding agent to:
 > - **Run inference and generate predictions** with the project's pretrained model checkpoints on new time intervals, events, or input channel configurations,
@@ -54,17 +54,17 @@ To make the agent-mediated notebook mechanics work reliably across 15–25 parti
 
 ## 2. Suggested Structure of the Workshop: Modules `M0` to `M6` (The GRASP Ladder)
 
-The 1.5-day curriculum follows the **GRASP** progression (**G**round $\to$ **R**eproduce $\to$ **A**rticulate $\to$ **S**olve $\to$ **P**rove & Skillify). Across modules `M0`–`M6`, the coding agent's autonomy expands only as the science user demonstrates mastery of the toolkit, its pretrained models/artifacts, and its physical assumptions.
+The curriculum is designed for **roughly 6 hours of total working time spread out across 1.5 days** (plus an optional Module 6), following the **GRASP** progression (**G**round $\to$ **R**eproduce $\to$ **A**rticulate $\to$ **S**olve $\to$ **P**rove & Skillify). Across modules `M0`–`M6`, the coding agent's autonomy expands only as the science user demonstrates mastery of the toolkit, its pretrained models/artifacts, and its physical assumptions.
 
 | Module | Time | Agent Role | Participant Role | How Participants Use the Agent with Notebooks, Models & Data | Key Deliverable / Gate |
 |---|---|---|---|---|---|
 | **M0 · Setup & First Contact** | Day 1<br/>30 min | **Environment Checker** | Operator | Prompt agent to summarize rules loaded from `GEMINI.md`, list the notebooks in `@notebooks/README.md`, verify local data/model cache + remote archive connectivity via `env/check_setup.py`, and run `pytest -q tests/`. | Green setup, model checkpoint & data-access check; `work/<name>/` sandbox initialized. |
 | **M1 · GROUND** | Day 1<br/>60 min | **Tutor**<br/>*(Read-Only)* | Learner & Fact-Checker | Prompt agent to map `@src/<toolkit>/` (loaders, preprocessing, pretrained model inference, artifacts) and `@notebooks/README.md` (`G1`), explain a tutorial notebook cell-by-cell (`G2`), quiz the participant on physical assumptions (`G3`), and assemble a personal cheat sheet (`G4`). | `work/<name>/notes/toolkit_map.md` & `my_cheatsheet.md` with **3 manually verified `file:line` citations**. |
 | **M2 · REPRODUCE** | Day 1<br/>60 min | **Navigator** | Experimentalist | Prompt agent to run a baseline inference/prediction notebook and summarize its metrics and warnings (`R1`), then plan, create, and run a modified notebook variant that fetches/loads a new event window, channel configuration, or operational parameter (`R2`) and analyze how the predictions changed physically. | Executed variant notebook `work/<name>/<variant>.ipynb` + 3-sentence physical interpretation of the perturbation. |
-| **M3 · ARTICULATE** | Day 1<br/>60 min | **Skeptical Collaborator**<br/>*(No Code Allowed)* | Science User (Scoping) | Prompt agent to challenge scope and draft a 5-hour Minimum Viable Science plan (`PLAN.md`) specifying how the project's pretrained models/artifacts will be applied, the exact data source (cached project data, bounded download from project archive, or participant-brought internet dataset), estimated download size, fallback slice, and toolkit functions per step (`A1`–`A2`). | **`PLAN.md` signed off by a facilitator at the Plan Gate (`A3`)** (verifying operational scope & data download size) before custom code is written. |
-| **M4 · SOLVE (Sprint 1)** | Day 1<br/>120 min | **Pair Programmer** | Science User & Code Reviewer | Prompt agent in a strict *Plan $\to$ Approve $\to$ Download/Ingest $\to$ Update `.py` & `.ipynb` $\to$ Run $\to$ Sanity-Check* loop (`S1`–`S4`) to fetch and cache required data, adapt any external dataset headers/units, run pretrained model inference or artifact queries in the notebook, run physical unit/range assertions, and generate a First-Light plot. End Day 1 with `HANDOFF.md` (`S6`). | Cached & validated dataset + **90-Minute First-Light Plot (`figures/first_light.png`)** passing facilitator check + `test_sanity.py` + `HANDOFF.md`. |
-| **M5 · SOLVE (Sprint 2) + PROVE** | Day 2<br/>85 min | **Hostile Journal Referee** | Defender & Validator | Finish MVP notebook (40 min), then switch agent to Hostile Referee mode (45 min): prompt agent to compare predictions against domain baselines (`P1`), audit the notebook/code for lookahead, alignment errors & circularity (`P2`), run benchmark event & negative-control checks (`P3`), critique the findings as a hostile referee (`P4`), and add block-bootstrapped error bars (`P5`). | `results_table.md` (with baselines & CIs), `figures/main_result.png`, evaluation audit report, and 1 executed referee test. |
-| **M6 · PACKAGE, SKILLIFY & PRESENT** (optional) | Day 2<br/>100 min | **Skill Architect & Technical Editor** | Author & Presenter | Prompt agent to clean and re-run the final notebook end-to-end from cached data (`X1`), generate a 1-page `FINDINGS.md` (`X2`), distill the notebook pipeline + `ERROR_LOG.md` into a reusable **Agent Skill** (`skills/<name>/SKILL.md` + CLI script) (`X3`), test a pod-mate's skill in a fresh session (`X4`), and file toolkit GitHub issues (`X5`). | Reproducible `final_verified.ipynb`, `FINDINGS.md`, validated `skills/<name>/`, and 5-min lightning talk. |
+| **M3 · ARTICULATE** | Day 1<br/>60 min | **Skeptical Collaborator**<br/>*(No Code Allowed)* | Science User (Scoping) | Prompt agent to challenge scope and draft a Minimum Viable Science plan (`PLAN.md`) scoped to fit within the workshop's remaining hands-on time, specifying how the project's pretrained models/artifacts will be applied, the exact data source (cached project data, bounded download from project archive, or participant-brought internet dataset), estimated download size, fallback slice, and toolkit functions per step (`A1`–`A2`). | **`PLAN.md` signed off by a facilitator at the Plan Gate (`A3`)** (verifying operational scope & data download size) before custom code is written. |
+| **M4 · SOLVE (Sprint 1)** | Day 1<br/>90–120 min | **Pair Programmer** | Science User & Code Reviewer | Prompt agent in a strict *Plan $\to$ Approve $\to$ Download/Ingest $\to$ Update `.py` & `.ipynb` $\to$ Run $\to$ Sanity-Check* loop (`S1`–`S4`) to fetch and cache required data, adapt any external dataset headers/units, run pretrained model inference or artifact queries in the notebook, run physical unit/range assertions, and generate a First-Light plot. End Day 1 with `HANDOFF.md` (`S6`). | Cached & validated dataset + **First-Light Plot (`figures/first_light.png`)** passing facilitator check + `test_sanity.py` + `HANDOFF.md`. |
+| **M5 · SOLVE (Sprint 2) + PROVE** | Day 2<br/>60–85 min | **Hostile Journal Referee** | Defender & Validator | Finish MVP notebook, then switch agent to Hostile Referee mode: prompt agent to compare predictions against domain baselines (`P1`), audit the notebook/code for lookahead, alignment errors & circularity (`P2`), run benchmark event & negative-control checks (`P3`), critique the findings as a hostile referee (`P4`), and add block-bootstrapped error bars (`P5`). | `results_table.md` (with baselines & CIs), `figures/main_result.png`, evaluation audit report, and 1 executed referee test. |
+| **M6 · PACKAGE, SKILLIFY & PRESENT** (optional) | Day 2<br/>60–90 min | **Skill Architect & Technical Editor** | Author & Presenter | Prompt agent to clean and re-run the final notebook end-to-end from cached data (`X1`), generate a 1-page `FINDINGS.md` (`X2`), distill the notebook pipeline + `ERROR_LOG.md` into a reusable **Agent Skill** (`skills/<name>/SKILL.md` + CLI script) (`X3`), test a pod-mate's skill in a fresh session (`X4`), and file toolkit GitHub issues (`X5`). | Reproducible `final_verified.ipynb`, `FINDINGS.md`, validated `skills/<name>/`, and 5-min lightning talk. |
 
 ---
 
@@ -76,11 +76,11 @@ Below is the structured plan for the development team to design and prepare the 
 
 ### 3.1 Deliverable 1: Scientific Goals, Benchmark Cases & Hybrid Data/Artifact Architecture
 
-Before writing or refactoring notebooks, the development team must define **what operational and scientific outcomes participants will achieve** using the project's models and artifacts, and engineer a **resilient data and artifact access layer** that supports both fast pre-staged slices and controlled live downloads.
+Before writing or refactoring notebooks, the development team must define **what operational and scientific outcomes participants will achieve** using the project's models and artifacts within **~6 hours of working time over 1.5 days**, and plan for the **data and computing requirements** needed to support those workflows smoothly.
 
 #### A. Core Scientific & Operational Goals for Participant
 
-Describe what are the learning goals to achieve by the participants, for instance:
+Describe the learning goals to be achieved by participants within the ~6 hours of hands-on work, for instance:
 
 - achieve an understanding of the architecture of the system
 - achieve an understanding of the artifacts offered (models, catalogues, data, etc.)
@@ -89,7 +89,7 @@ Describe what are the learning goals to achieve by the participants, for instanc
  
 #### B. Data and computing requirements
 
-Describe and provide estimates for volumetry of
+Describe and provide estimates for volumetry (sized so downloads and notebook runs fit comfortably within the 6-hour workshop window) of:
 
 - the data that the participant might bring
 - additional the data that we might need to provide
