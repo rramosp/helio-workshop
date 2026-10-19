@@ -1,6 +1,14 @@
 # Workshop Preparation Guide for Project Developers
 
-This document provides instructions and a one-week execution plan for project developers to organize, build, and verify the materials for our **1.5-day AI-Assisted Scientific Computing Workshop**.
+This document provides instructions for project developers to organize and prepare the materials for our **1.5-day AI-Assisted Scientific Computing Workshop**.
+
+## Executive Summary
+
+- **Workshop in AI-Assisted Notebook Mode**: Participants (science users) interact with the project through Jupyter notebooks by prompting an AI coding agent—rather than writing code by hand—to download and ingest data, run the project's pretrained models and artifacts (without retraining), execute modified notebooks, and validate scientific results.
+- **The Three Deliverables Each Team Must Prepare ([Section 3](#3-planning-workshop-materials))**:
+  1. **Scientific Goals & Data/Compute Requirements ([§3.1](#31-deliverable-1-scientific-goals-benchmark-cases--hybrid-dataartifact-architecture))**: Define the operational and scientific learning goals for participants along with data volume and compute estimates for both project-provided and participant-brought datasets.
+  2. **Sequential Workshop Notebooks ([§3.2](#32-deliverable-2-list-of-notebooks-to-be-developed-and-organized))**: Provide a numbered sequence of modular, pre-executed Jupyter notebooks (`01_`, `02_`, ...) and a brief `notebooks/README.md` index covering data ingestion, preprocessing, pretrained model inference, and artifact analysis.
+  3. **Participant Guide & Prompt Examples ([§3.3](#33-deliverable-3-participant-guide--how-to-interact-with-notebooks--prompt-the-coding-agent))**: Prepare a `participant-guide.md` containing practical workflow guidelines and illustrative prompt templates that show science users how to direct the coding agent across the workshop modules.
 
 ---
 
@@ -18,15 +26,6 @@ Unlike a traditional tutorial where participants passively press `Shift+Enter` o
 > 3. **Run the notebooks and automated sanity checks**, and
 > 4. **Analyze, validate, and critique the scientific results** against domain baselines, audit for subtle physical/statistical pitfalls, and package their validated workflow into a reusable **Agent Skill**.
 
-```mermaid
-flowchart LR
-    Sci["Participant<br/>(Science User)"] -->|"1. Grounded Prompt<br/>(@notebooks/..., @src/...)"| Agent["AI Coding Agent<br/>(Gemini CLI / Claude Code)"]
-    Agent -->|"2. Proposes Plan, Estimates<br/>Download Size & Cites file:line"| Sci
-    Sci -->|"3. Approves Plan &<br/>Physical Assumptions"| Agent
-    Agent -->|"4. Downloads/Caches Data, Updates<br/>.ipynb & work/<name>/src/*.py"| NB["Jupyter Notebooks &<br/>Toolkit Pipeline"]
-    Agent -->|"5. Runs Notebooks<br/>& pytest"| Out["Figures, Predictions &<br/>Validation Tables"]
-    Out -->|"6. Physical & Statistical<br/>Inspection"| Sci
-```
 
 ### 1.2 Operational Focus: Using Project Models & Artifacts (Not Retraining Models)
 
@@ -49,10 +48,7 @@ To make the agent-mediated notebook mechanics work reliably across 15–25 parti
 2. **Helper logic (including custom data downloaders/adapters) extracted to `.py` files**: For custom participant analyses in Module 4, the agent writes reusable functions—including any download scripts or adapters for participant-brought external datasets—into `work/<name>/src/*.py` with unit tests in `work/<name>/tests/`, keeping the notebook cells clean.
 3. **Explicit domain context (`GEMINI.md` / `AGENTS.md` / `CLAUDE.md`)**: A concise ($\le 150$-line) root instruction file loaded automatically by the coding agent that enforces *Toolkit First*, *Use Pretrained Models & Artifacts (Do Not Retrain)*, *Plan Before Code*, *Dry-Run & Cache Before Downloading*, *Cite `file:line`*, and our toolkit's non-negotiable physical and statistical conventions.
 4. **Loud runtime guardrails**: Toolkit functions raise clear `ValueError` exceptions whenever an agent passes wrong units, uncalibrated data levels, naive timestamps, or invalid model inputs.
-5. **Hybrid Data & Artifact Architecture (Local Cache + Controlled Remote Fetching)**:
-   - **Pre-staged / fast-mirror benchmark datasets, checkpoints, and artifacts (`data/` & `artifacts/`)** so tutorial notebooks and fallback cases work instantaneously even if external archives throttle the venue Wi-Fi,
-   - **Bounded, idempotent remote fetchers (`<toolkit>.io`)** that estimate download volume (`dry_run=True`), enforce size caps, and cache files locally (`data/cache/`) so notebooks never download the same file twice, and
-   - **External data ingestion patterns** so participants who download their own datasets from the internet can validate and adapt them into the toolkit's format safely.
+
 
 ---
 
@@ -68,13 +64,13 @@ The 1.5-day curriculum follows the **GRASP** progression (**G**round $\to$ **R**
 | **M3 · ARTICULATE** | Day 1<br/>60 min | **Skeptical Collaborator**<br/>*(No Code Allowed)* | Science User (Scoping) | Prompt agent to challenge scope and draft a 5-hour Minimum Viable Science plan (`PLAN.md`) specifying how the project's pretrained models/artifacts will be applied, the exact data source (cached project data, bounded download from project archive, or participant-brought internet dataset), estimated download size, fallback slice, and toolkit functions per step (`A1`–`A2`). | **`PLAN.md` signed off by a facilitator at the Plan Gate (`A3`)** (verifying operational scope & data download size) before custom code is written. |
 | **M4 · SOLVE (Sprint 1)** | Day 1<br/>120 min | **Pair Programmer** | Science User & Code Reviewer | Prompt agent in a strict *Plan $\to$ Approve $\to$ Download/Ingest $\to$ Update `.py` & `.ipynb` $\to$ Run $\to$ Sanity-Check* loop (`S1`–`S4`) to fetch and cache required data, adapt any external dataset headers/units, run pretrained model inference or artifact queries in the notebook, run physical unit/range assertions, and generate a First-Light plot. End Day 1 with `HANDOFF.md` (`S6`). | Cached & validated dataset + **90-Minute First-Light Plot (`figures/first_light.png`)** passing facilitator check + `test_sanity.py` + `HANDOFF.md`. |
 | **M5 · SOLVE (Sprint 2) + PROVE** | Day 2<br/>85 min | **Hostile Journal Referee** | Defender & Validator | Finish MVP notebook (40 min), then switch agent to Hostile Referee mode (45 min): prompt agent to compare predictions against domain baselines (`P1`), audit the notebook/code for lookahead, alignment errors & circularity (`P2`), run benchmark event & negative-control checks (`P3`), critique the findings as a hostile referee (`P4`), and add block-bootstrapped error bars (`P5`). | `results_table.md` (with baselines & CIs), `figures/main_result.png`, evaluation audit report, and 1 executed referee test. |
-| **M6 · PACKAGE, SKILLIFY & PRESENT** | Day 2<br/>100 min | **Skill Architect & Technical Editor** | Author & Presenter | Prompt agent to clean and re-run the final notebook end-to-end from cached data (`X1`), generate a 1-page `FINDINGS.md` (`X2`), distill the notebook pipeline + `ERROR_LOG.md` into a reusable **Agent Skill** (`skills/<name>/SKILL.md` + CLI script) (`X3`), test a pod-mate's skill in a fresh session (`X4`), and file toolkit GitHub issues (`X5`). | Reproducible `final_verified.ipynb`, `FINDINGS.md`, validated `skills/<name>/`, and 5-min lightning talk. |
+| **M6 · PACKAGE, SKILLIFY & PRESENT** (optional) | Day 2<br/>100 min | **Skill Architect & Technical Editor** | Author & Presenter | Prompt agent to clean and re-run the final notebook end-to-end from cached data (`X1`), generate a 1-page `FINDINGS.md` (`X2`), distill the notebook pipeline + `ERROR_LOG.md` into a reusable **Agent Skill** (`skills/<name>/SKILL.md` + CLI script) (`X3`), test a pod-mate's skill in a fresh session (`X4`), and file toolkit GitHub issues (`X5`). | Reproducible `final_verified.ipynb`, `FINDINGS.md`, validated `skills/<name>/`, and 5-min lightning talk. |
 
 ---
 
 ## 3. Planning workshop materials
 
-Below is the structured plan for the development team to design, implement, and verify all workshop materials. It is organized around the **three primary deliverables**—**(3.1) Scientific Goals, Pretrained Artifacts & Hybrid Data Plan**, **(3.2) Workshop Notebooks**, and **(3.3) The Participant Guide & Prompt Catalog**—followed by the **day-by-day execution schedule (3.4)**.
+Below is the structured plan for the development team to design and prepare the workshop materials, organized around **three primary deliverables**: **(3.1) Scientific Goals & Data/Compute Requirements**, **(3.2) Workshop Notebooks**, and **(3.3) The Participant Guide & Suggested Prompts**.
 
 ---
 
@@ -305,48 +301,3 @@ Once the science results are ready, participants can prompt the agent to clean u
 > ```
 
 ---
-
-### 3.4 Day-by-Day Developer Schedule During Preparation Week
-
-Use this 5-day schedule to coordinate the development team and hit all qualification gates before the workshop begins.
-
-| Day | Focus Area | Concrete Developer Tasks | End-of-Day Deliverable |
-|---|---|---|---|
-| **Day 1 (Mon)** | **Architecture Inventory, Scientific Goals & Hybrid Data/Artifact Layer** | 1. Complete the Toolkit Architecture Inventory table (§3.1.D).<br/>2. Define the 3 Worked Science User Personas / Backup Cases (`Case α, β, γ`) and operational goals (§3.1.A–B).<br/>3. Implement/verify the bounded remote downloader (`dry_run=True`, `max_size_mb`, `data/cache/` idempotency) and `validate_external_dataset()` in `src/<toolkit>/io.py`.<br/>4. Stage the 3-tier benchmark dataset and pretrained model checkpoints/artifacts in `data/` (plus `env/prefetch_data.py` mirror script) and write `data/README.md` documenting local paths, model artifacts, remote query APIs, schemas, and physical units. | Bounded remote fetcher + `data/` & pretrained artifacts cache verified; `data/README.md` complete; 3 science cases defined. |
-| **Day 2 (Tue)** | **Agent-Ready Toolkit API, Guardrails & Core Tutorial Notebooks (`01`–`05`)** | 1. Audit the 15–20 core public functions in `src/<toolkit>/`: add structured docstrings (units, frames, what each function does *not* do, 3-line examples) and loud runtime `ValueError` guardrails.<br/>2. Ensure pretrained model inference wrappers (`load_pretrained_model`, `run_inference`), domain baselines (`PersistenceBaseline`, `ClimatologyBaseline`), and block bootstrap exist in `src/<toolkit>/`.<br/>3. Build/refactor Tutorial Notebooks `01` through `05` (§3.2 Group 1) with top configuration cells, cached remote fetching in `01`, and $\le 25$-line modular cells.<br/>4. Write `notebooks/README.md` and `docs/CHEATSHEET.md`. | `notebooks/01_...` to `05_...` execute top-to-bottom in $< 60\,\text{s}$; `docs/CHEATSHEET.md` ready. |
-| **Day 3 (Wed)** | **Backup Case Starters, Reference Skill & Agent Context (`GEMINI.md`)** | 1. Create `backup_cases/case_{alpha,beta,gamma}/` with pre-approved `PLAN.md` and starter notebooks (`starter_analysis.ipynb`).<br/>2. Build 1 gold-standard reference skill in `skills/<reference-skill>/` wrapping Notebook `05`.<br/>3. Write the root `GEMINI.md` ($\le 150$ lines) with our toolkit's domain conventions, operational-inference-only rule (no model retraining), bounded-download rules, and external-data validation rules; symlink `AGENTS.md -> GEMINI.md` and `CLAUDE.md -> GEMINI.md`. | `backup_cases/`, reference skill, and `GEMINI.md` committed and verified. |
-| **Day 4 (Thu)** | **Participant Guide Customization & Verification Scripts** | 1. Customize `participant-guide.md` and `prompts/*.md` with our toolkit's function names, pretrained checkpoints, notebook filenames, remote data fetching examples, and the 6 notebook prompt patterns (§3.3).<br/>2. Configure and test `env/check_setup.py` (checking local data/artifact cache, pretrained model loading, and remote archive reachability), `env/validate_skill.py`, and `templates/` (`PLAN_TEMPLATE.md`, `ERROR_LOG.md`, `HANDOFF.md`, `SKILL_TEMPLATE.md`, `skill_cli_template.py`). | Complete draft of `participant-guide.md`; reference skill passes `python env/validate_skill.py`. |
-| **Day 5 (Fri)** | **Pre-Workshop Qualification Gates & Facilitator Dry Run** | Execute all 3 mandatory Qualification Gates (below). Fix any docstrings, download/caching helpers, notebook cells, or prompt cards where the coding agent stumbles. Tag the release branch for participants. | **All 3 Qualification Gates GREEN**; repository frozen and ready for participants. |
-
----
-
-## 4. Final Pre-Workshop Qualification Checklist ("Definition of Done")
-
-Do **not** consider the workshop materials complete until a developer who did not author the notebooks runs and passes all three checks on Friday:
-
-- [ ] **Gate 1 — Automated Repo, Data-Caching, Notebook & Skill Sweep**:
-  Run both with live network enabled (testing bounded remote fetch + caching in `data/cache/`) and with network disabled (testing cache hit / local fallback):
-  ```bash
-  python env/check_setup.py
-  python env/validate_skill.py skills/<reference-skill-name>
-  pytest -q tests/
-  jupyter nbconvert --to notebook --execute notebooks/*.ipynb --output-dir /tmp/nb_verify
-  ```
-  Every command **must** exit `0`, and each notebook must finish in $< 60\,\text{s}$ once cached.
-
-- [ ] **Gate 2 — The 10-Prompt Agent Smoke Test ($\ge 8/10$ Required)**:
-  Start a fresh coding agent session in the repository root and run 10 canonical prompts covering:
-  1. Running a `dry_run=True` remote archive query to estimate download size before fetching a small slice into `data/cache/`,
-  2. Inspecting and adapting a sample external/internet data file (checking UTC timestamps, physical units, and fill-value sentinels),
-  3. Tracing calibration/registration functions and unit conversions (`file:line`),
-  4. Coordinate projection and boundary masking rules,
-  5. Pretrained model input channel ordering, scaling requirements, and forward inference calls,
-  6. Querying and slicing precomputed project artifacts/embeddings in `data/artifacts/`,
-  7. Invoking the pre-installed reference skill in `skills/` on Benchmark Event 1,
-  8. Handling observation gaps/dropouts during target alignment and evaluation,
-  9. Running Notebook `03` and reporting operational skill scores against `PersistenceBaseline` and `ClimatologyBaseline`, and
-  10. Computing block-bootstrapped 95% confidence intervals.
-  Verify that the agent cites accurate `src/<toolkit>/<file>.py:<line>` and notebook cells without inventing APIs, attempting to retrain models, or launching unbounded downloads.
-
-- [ ] **Gate 3 — End-to-End 90-Minute Facilitator Dry Run**:
-  Have a team member step through `M0` $\to$ `M6` as a participant using **Backup Case α** (or **Case γ** with an external online catalog download) and only `participant-guide.md`—issuing prompts to the coding agent to estimate and cache a remote data download, ingest and validate the data, run pretrained model inference / artifact analysis in the notebook, generate `figures/first_light.png` within 45 minutes, run the `P1`–`P5` validation suite, and distill a working Agent Skill (`X3`–`X4`) that passes `env/validate_skill.py` and executes in a fresh agent session.
