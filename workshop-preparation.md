@@ -5,10 +5,11 @@ This document provides instructions for project developers to organize and prepa
 ## Executive Summary
 
 - **Workshop in AI-Assisted Notebook Mode (~6 Hours Across 1.5 Days)**: Over roughly six hours of planned working time spread across 1.5 days, participants (science users) interact with the project through Jupyter notebooks by prompting an AI coding agent—rather than writing code by hand—to download and ingest data, run the project's pretrained models and artifacts (without retraining), execute modified notebooks, and validate scientific results.
-- **The Three Deliverables Each Team Must Prepare ([Section 3](#3-planning-workshop-materials))**:
+- **The Four Deliverables Each Team Must Prepare ([Section 3](#3-planning-workshop-materials))**:
   1. **Scientific Goals & Data/Compute Requirements ([§3.1](#31-deliverable-1-scientific-goals-benchmark-cases--hybrid-dataartifact-architecture))**: Define the operational and scientific learning goals achievable within the ~6-hour workshop timeframe, along with data volume and compute estimates for both project-provided and participant-brought datasets.
   2. **Workshop Notebooks List ([§3.2](#32-deliverable-2-list-of-notebooks-to-be-developed-and-organized))**: Provide a numbered sequence of modular, pre-executed Jupyter notebooks (`01_`, `02_`, ...) together with a brief explanation of what each one would do (not the actual notebook, just the list and description).
   3. **Draft Participant Guide & Prompt Examples ([§3.3](#33-deliverable-3-draft-participant-guide--how-to-interact-with-notebooks--prompt-the-coding-agent))**: Prepare an initial draft of `participant-guide.md` outlining practical workflow guidelines and preliminary prompt examples showing how science users will direct the coding agent across the workshop modules (to be refined into the final guide once the notebooks are built).
+  4. **Pre-Workshop Participant Questionnaire ([§3.4](#34-deliverable-4-pre-workshop-participant-questionnaire-intake-form))**: Provide the list of questions to send to participants via an online form prior to the workshop to understand their background, scientific goals, candidate events or datasets they plan to bring, and computing/setup needs.
 
 ---
 
@@ -70,7 +71,7 @@ The curriculum is designed for **roughly 6 hours of total working time spread ou
 
 ## 3. Planning workshop materials
 
-Below is the structured plan for the development team to design and prepare the workshop materials, organized around **three primary deliverables**: **(3.1) Scientific Goals & Data/Compute Requirements**, **(3.2) Workshop Notebooks List**, and **(3.3) A Draft Participant Guide & Suggested Prompts**.
+Below is the structured plan for the development team to design and prepare the workshop materials, organized around **four primary deliverables**: **(3.1) Scientific Goals & Data/Compute Requirements**, **(3.2) Workshop Notebooks List**, **(3.3) A Draft Participant Guide & Suggested Prompts**, and **(3.4) Pre-Workshop Participant Questionnaire (Intake Form)**.
 
 ---
 
@@ -299,5 +300,38 @@ Once the science results are ready, participants can prompt the agent to clean u
 > 3. Propose the CLI wrapper script `skills/<skill-name>/scripts/<skill_cli>.py` and the top 3 domain pitfalls from `ERROR_LOG.md` to include under `## Common Mistakes`.
 > Wait for my approval before creating the files and running `python env/validate_skill.py skills/<skill-name>`.
 > ```
+
+---
+
+### 3.4 Deliverable 4: Pre-Workshop Participant Questionnaire (Intake Form)
+
+Prepare a list of questions to be sent to participants via an online form **before the workshop is held**. Collecting these responses ahead of time allows the development team to tailor benchmark examples, pre-stage requested archive slices, anticipate external data formats and volumes, and resolve environment or credential issues before Day 1 so the ~6 hours of hands-on time are spent on science.
+
+Below are the recommended question categories and illustrative prompts that the development team can select from and adapt to their specific project, models, and domain:
+
+#### A. Scientific Background & Familiarity with the Project
+1. **Research area & role**: What is your primary scientific subfield, research focus, and current role?
+2. **Familiarity with our project & artifacts**: How familiar are you with `<project/toolkit>` and its pretrained models, catalogs, or derived artifacts? *(e.g., Never used / Read papers or documentation / Inspected outputs or catalogs / Actively run the code or models)*
+3. **Specific project artifacts of interest**: Which of the project's pretrained models, prediction catalogs, embeddings, or data products are you most interested in exploring during the workshop (or would you like help selecting)?
+
+#### B. Candidate Scientific Questions & Target Events/Intervals
+4. **Candidate workshop science question**: What specific scientific question, physical phenomenon, or operational evaluation would you like to investigate during the workshop using our models and artifacts? *(1–3 sentences; rough ideas are welcome)*
+5. **Target events, time intervals, or regimes**: Are there particular benchmark events, date ranges, spatial regions, instruments, or physical regimes you would like to analyze? *(Listing these early helps us pre-stage or verify cache coverage in advance.)*
+6. **Openness to prepared backup cases**: If you do not yet have a specific event or question in mind, which of our prepared project themes or benchmark case studies sounds most relevant to your work?
+
+#### C. Participant-Brought Datasets & Data Volume Estimates
+7. **External or participant-brought data**: Do you plan to bring your own dataset or download an external dataset/catalog from the internet to combine or compare with our project's predictions and artifacts? *(Yes / No / Maybe)*
+8. **External dataset details (if applicable)**:
+   - **Source & access**: Where is the dataset hosted (e.g., local files, public URL/API, Zenodo, NASA/ESA archive, CDAWeb, VSO), and does it require authentication or API keys?
+   - **Format & structure**: What file format is it in (e.g., FITS, NetCDF, HDF5, Zarr, Parquet, CSV), and what are its primary physical variables, units, coordinate frame, and time cadence?
+   - **Estimated volume**: Roughly how many files and how many MB/GB would be needed for the target slice you want to analyze during the 6-hour workshop?
+
+#### D. Technical Setup, Python & AI Coding Agent Experience
+9. **Python & Jupyter experience**: How comfortable are you working with Python and Jupyter notebooks for scientific data analysis? *(Beginner / Intermediate / Advanced)*
+10. **AI coding agent experience & preferred tool**:
+    - Have you previously used AI coding assistants or CLI agents (e.g., Gemini CLI, Claude Code, Codex, Cursor, GitHub Copilot)?
+    - Which AI coding agent CLI do you plan to use during the workshop, and do you already have an active account/API key configured for it?
+11. **Computing environment**: What machine or environment do you plan to use during the workshop (e.g., personal laptop OS/RAM, institutional workstation, or a workshop-provided cloud/JupyterHub/Colab instance), and do you anticipate needing cloud compute support for running model inference?
+12. **Workshop expectations**: What single outcome or takeaway would make this 1.5-day (~6-hour) workshop most valuable for your research?
 
 ---
