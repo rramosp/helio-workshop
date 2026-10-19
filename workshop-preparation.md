@@ -72,9 +72,9 @@ The 1.5-day curriculum follows the **GRASP** progression (**G**round $\to$ **R**
 
 ---
 
-## 3. One-Week Plan to Deliver the Workshop Materials
+## 3. Planning workshop materials
 
-Below is the structured plan for the development team to design, implement, and verify all workshop materials during the preparation week. It is organized around the **three primary deliverables**—**(3.1) Scientific Goals, Pretrained Artifacts & Hybrid Data Plan**, **(3.2) Workshop Notebooks**, and **(3.3) The Participant Guide & Prompt Catalog**—followed by the **day-by-day execution schedule (3.4)**.
+Below is the structured plan for the development team to design, implement, and verify all workshop materials. It is organized around the **three primary deliverables**—**(3.1) Scientific Goals, Pretrained Artifacts & Hybrid Data Plan**, **(3.2) Workshop Notebooks**, and **(3.3) The Participant Guide & Prompt Catalog**—followed by the **day-by-day execution schedule (3.4)**.
 
 ---
 
@@ -82,90 +82,45 @@ Below is the structured plan for the development team to design, implement, and 
 
 Before writing or refactoring notebooks, the development team must define **what operational and scientific outcomes participants will achieve** using the project's models and artifacts, and engineer a **resilient data and artifact access layer** that supports both fast pre-staged slices and controlled live downloads.
 
-#### A. Core Scientific & Operational Goals for Every Participant
-By the end of the workshop, every participant must achieve five concrete goals using our toolkit via their coding agent:
-1. **Master Data Discovery, Bounded Downloading & Physical Preprocessing**: Query remote archives or external URLs safely (checking file counts and sizes before downloading), cache data locally, and trace raw inputs through calibration, coordinate registration, quality/gap masking, and model-input assembly—verifying physical units and coordinate frames at every step.
-2. **Operate Pretrained Project Models & Artifacts Across Regimes**: Run the project's pretrained models and inspect derived artifacts (predictions, embeddings, reconstructions, attribution maps) through the coding agent, systematically evaluating how perturbing an operational parameter—or fetching a new event slice from the online archive—changes the scientific output.
-3. **Enforce Operational Evaluation Integrity**: Evaluate predictions without lookahead leakage, threshold-tuning circularity, or timestamp misalignment when joining multi-source or external catalogs.
-4. **Complete a Falsifiable 5-Hour Science Investigation (MVP) with Rigorous Validation**: Formulate a focused science question (using project models/artifacts on project data or participant-brought internet data), implement the analysis via agent-directed notebook + `.py` steps, benchmark against built-in domain baselines (e.g., Persistence and Climatology), validate on a **known positive benchmark event** and a **quiet/negative-control interval**, and compute domain-aware uncertainty intervals.
-5. **Publish a Reusable Agent Skill for the Community**: Encapsulate their validated operational workflow (including its data-fetching/caching, preprocessing, inference, and evaluation guardrails) into a standalone `skills/<skill-name>/SKILL.md` + parameterized CLI script so any science user can run the analysis on new dates or events in a single prompt.
+#### A. Core Scientific & Operational Goals for Participant
 
-#### B. Define 3 Concrete Science User Personas / Backup Science Cases (`Case α`, `Case β`, `Case γ`)
-Not every participant arrives with a well-scoped 5-hour question, and some participants will bring external data ideas that turn out to be too large or unavailable online. Developers **must define and stage data/artifacts for 3 canonical operational science cases** (none of which require retraining models):
+Describe what are the learning goals to achieve by the participants, for instance:
 
-| Case | Archetype | What Developers Must Define for the Project | Data & Artifact Access Pattern Demonstrated | Target Reusable Skill in `M6` |
-|---|---|---|---|---|
-| **Case α** | **Input Channel / Calibration Sensitivity on Model Predictions** | A science question testing **how input channel availability or instrument calibration affects pretrained model predictions** (e.g., running inference with degraded/missing channels or omitting time-dependent degradation correction and quantifying the resulting prediction bias). | Uses pre-staged Tier-2 multi-channel cubes + fetches 1 updated calibration table or event slice from the online archive + runs pretrained model inference. | `skills/<channel-or-calibration-skill>/` |
-| **Case β** | **Geometric / Spatial / Regime Stratification of Operational Skill** | A science question auditing **how the pretrained model's predictions perform across spatial coordinates, viewing geometry, latitude/longitude bins, or physical activity regimes**, exposing where operational skill degrades and testing a post-processing or threshold calibration adjustment. | Queries the remote catalog/archive to download a targeted subset of events into `data/cache/` and stratifies precomputed predictions/inference outputs. | `skills/<geometry-or-regime-audit-skill>/` |
-| **Case γ** | **Cross-Dataset Analysis with Precomputed Project Artifacts & External Data** | A science question combining **Tier-1 precomputed project artifacts (e.g., embeddings, prediction time series, or derived physical parameters)** with an **external online catalog or auxiliary time series downloaded from the internet** (e.g., an external event list, solar wind/geomagnetic index, or secondary instrument log) to test a physical hypothesis or lead-time relationship. | Demonstrates downloading an external internet catalog/file into `work/<name>/data/`, aligning timestamps/units, and analyzing it against precomputed project artifacts on CPU. | `skills/<cross-dataset-analysis-skill>/` |
+- achieve an understanding of the architecture of the system
+- achieve an understanding of the artifacts offered (models, catalogues, data, etc.)
+- achieve an understanding on how use the artifacts (how to run inferene to make predictions, analyze data, etc.)
+- combine the above to address a scientific question
+ 
+#### B. Data and computing requirements
 
-#### C. Engineer the Hybrid Data & Artifact Architecture (`data/` + Remote Fetching)
-Because project datasets, model artifacts, and participant-brought datasets may live on the internet, developers must support **three pathways** while protecting the workshop from conference Wi-Fi bottlenecks and upstream archive outages:
+Describe and provide estimates for volumetry of
 
-1. **Pathway 1 — Pre-Cached / Fast-Mirror Core Tiers (`data/catalogs/`, `data/artifacts/`, `data/cubes/`, `data/events/`)**:
-   - Stage (or provide a 1-command `python env/prefetch_data.py` script pulling from a fast cloud mirror such as S3/GCS/Zenodo/HuggingFace) three tiers of operational assets:
-     - **Tier 1 (`data/artifacts/`, `data/catalogs/`, $< 250\,\text{MB}$)**: Pretrained model checkpoints, precomputed model predictions/embeddings across multi-year benchmark periods, and tabular event catalogs that load and analyze in $< 5\,\text{s}$ on CPU.
-     - **Tier 2 (`data/cubes/`, $1\text{–}4\,\text{GB}$)**: Downsampled, co-aligned multi-channel arrays for running preprocessing and live pretrained model inference in $< 15\,\text{s}$.
-     - **Tier 3 (`data/events/`, $< 2\,\text{GB}$)**: Full-resolution slices for **Benchmark Event 1** (primary active event), **Benchmark Event 2** (perturbation active event), and **Benchmark Event 3** (quiet/negative-control interval).
-2. **Pathway 2 — Bounded, Idempotent Project Archive Downloader (`<toolkit>.io.fetch_...` $\to$ `data/cache/`)**:
-   - Provide a first-class download function in `src/<toolkit>/io.py` for fetching additional dates, wavelengths, events, or model artifacts from our project's online servers/APIs.
-   - **Mandatory Agent Safety Features**:
-     - `dry_run: bool = False` (or a companion `estimate_download()` function) that queries the remote server and returns the **number of files and estimated total MB** *before* downloading a single byte.
-     - `max_size_mb: float = 500.0` guardrail that raises a `ValueError` if an agent attempts an unbounded multi-gigabyte download without explicit override.
-     - **Idempotent local caching** in `data/cache/` (keyed by query parameters or file hash) so re-running a notebook cell **never re-downloads** files already on disk.
-     - Clear timeout and retry handling with a helpful error message pointing to the pre-cached fallback slices in `data/` if the remote server is unreachable.
-3. **Pathway 3 — Participant-Brought Internet Data Ingestion (`work/<name>/data/`)**:
-   - Participants bringing their own datasets from external URLs, virtual observatories (e.g., VSO, JSOC, CDAWeb, MAST), Zenodo, or institutional servers store downloaded files in `work/<name>/data/` (git-ignored).
-   - Provide a lightweight validation utility (e.g., `<toolkit>.io.validate_external_dataset()`) or template script that checks external data for the four most common compatibility bugs when agents ingest internet data:
-     1. **Time standard & timezone**: Ensuring timestamps are converted to UTC observation times (not local time or file-download timestamps),
-     2. **Physical units & scaling**: Verifying physical units (`astropy.units` or metadata keys) match what `<toolkit>.prep` and the pretrained models expect,
-     3. **Coordinate frame & grid**: Checking WCS headers or spatial coordinate conventions before co-alignment, and
-     4. **Missing-value / fill-value sentinels**: Converting instrument fill values (e.g., `-9999`, `-1e31`) to `np.nan` before running inference or computing statistics.
+- the data that the participant might bring
+- additional the data that we might need to provide
+- the amount of computing required for the participant's workflow (for instance, the kind of machine required to run the notebooks)
 
-#### D. Developer Architecture Inventory Worksheet
-As your first task on Day 1 of preparation, fill out this inventory table with the development team to lock in the public surface area exposed to participants and agents:
-
-| Toolkit Layer | Target Module in `src/<toolkit>/` | Core Public Functions / Classes (15–20 Total) | Key Physical Units, Coordinate Frames & Guardrails to Enforce |
-|---|---|---|---|
-| **1. Remote Fetching, Caching & Loaders** | `src/<toolkit>/io.py` | e.g., `query_archive()`, `fetch_data(..., dry_run=True, max_size_mb=500)`, `load_observation()`, `load_catalog()`, `load_artifacts()`, `validate_external_dataset()` | Idempotent caching in `data/cache/`; enforce `max_size_mb` cap; require UTC-aware timestamps; convert sentinel fill values to `NaN`. |
-| **2. Calibration & Registration** | `src/<toolkit>/prep.py` | e.g., `register_level15()`, `correct_degradation()`, `correct_projection()`, `coalign_channels()`, `scale_inputs()` | State exact input/output units; raise `ValueError` on double normalization or uncalibrated inputs. |
-| **3. Target Alignment & Regime Slicers** | `src/<toolkit>/labels.py` | e.g., `align_event_catalog()`, `slice_by_regime()`, `exclude_data_gaps()` | Mask data/eclipse gaps as `NaN` (never `0`); enforce strict UTC lookahead boundaries (`t <= t0`). |
-| **4. Pretrained Models, Artifacts & Baselines** | `src/<toolkit>/models.py` | e.g., `load_pretrained_model()`, `run_inference()`, `extract_embeddings()`, `PersistenceBaseline`, `ClimatologyBaseline` | Inference-ready (`model.eval()`); shared `.predict()` interface across pretrained models and baselines; verify input tensor scaling before forward pass. |
-| **5. Evaluation, Attribution & Plots** | `src/<toolkit>/eval.py` | e.g., `compute_skill_metrics()`, `calibrate_threshold()`, `block_bootstrap_metric()`, `attribute_regions()`, `plot_event_diagnostics()` | Require pre-calibrated threshold as explicit kwarg; block bootstrap over physical rotation/event blocks. |
 
 ---
 
 ### 3.2 Deliverable 2: List of Notebooks to Be Developed and Organized
 
-Developers must prepare and test **8 notebooks total** (5 Core Tutorial Notebooks + 3 Backup Case Starter Notebooks) plus a master `notebooks/README.md` index table. Every notebook must be structured so a coding agent can read, explain, modify, download/cache data through, and execute it reliably—focusing on **operational inference and artifact analysis rather than model retraining**.
+Provide the list of sequential tutorial notebooks (`notebooks/01_...`, `02_...`, `03_...`, etc.) that participants and their coding agents will use as building blocks during the workshop, along with a short description of what each notebook demonstrates.
 
-#### Group 1: The 5 Core Tutorial Notebooks (`notebooks/01_...` to `05_...`)
-These five notebooks form the backbone of the workshop. Participants use them in **M1 (Ground)** to learn the toolkit, in **M2 (Reproduce)** to run baseline and perturbed inference workflows (including fetching new slices), and in **M3–M5 (Articulate, Solve, Prove)** as building blocks for their own investigation.
+Use the `01_`, `02_`, `03_` naming convention to reflect the natural progression from data ingestion to operational model/artifact usage and scientific analysis. For example:
 
-| Notebook Filename (Adapt Name to Domain) | Pedagogical Role in Workshop | What the Notebook Must Demonstrate | Target Data Tier & Max Runtime |
-|---|---|---|---|
-| **`notebooks/01_ingest_and_calibration.ipynb`** | **Remote Querying, Caching, Data Ingestion & Calibration** | Running a bounded archive query (`dry_run=True`), downloading/caching a small observation slice into `data/cache/` (with instant fallback to `data/events/`), inspecting headers/metadata/units, applying pointing/coordinate registration, instrument degradation/exposure normalization, boundary/quality masking, and plotting calibrated vs. uncalibrated physical quantities. | Tier 3 (`data/events/` or cached fetch)<br/>$\le 25\,\text{s}$ |
-| **`notebooks/02_coalignment_and_model_inputs.ipynb`** | **Multi-Source Co-Alignment, Tensor Assembly & Catalog Matching** | Co-aligning multiple instruments/channels (including aligning an external/downloaded catalog) onto a synchronized spatial/temporal grid, handling observation gaps safely, scaling physical channels into inference-ready input tensors, and matching timestamps to target events without lookahead. | Tier 2 (`data/cubes/`) + `catalogs/`<br/>$\le 30\,\text{s}$ |
-| **`notebooks/03_pretrained_inference_and_baselines.ipynb`** | **Operational Model Inference & Baseline Benchmarking** | Loading the project's pretrained model checkpoint, running operational inference/predictions on Tier-2 data, applying reference decision thresholds, and comparing domain skill metrics against `PersistenceBaseline` and `ClimatologyBaseline`. **Used in `R1` reproduction.** | Tier 2 (`data/cubes/`)<br/>$\le 40\,\text{s}$ |
-| **`notebooks/04_artifacts_embeddings_and_regime_analysis.ipynb`** | **Fast Multi-Year Analysis with Precomputed Artifacts & Embeddings** | Loading precomputed Tier-1 project artifacts (model predictions, embeddings, or derived catalogs in `data/artifacts/`) and joining them with local or downloaded auxiliary datasets to slice performance across physical regimes, run channel/calibration sensitivity comparisons, or perform embedding similarity searches in seconds on CPU, including block-bootstrapped confidence intervals. **Primary template for `R2` and `M4` MVPs.** | Tier 1 (`data/artifacts/`)<br/>$\le 10\,\text{s}$ |
-| **`notebooks/05_event_diagnostics_and_attribution.ipynb`** | **Event Case Studies, Attribution & Visual Diagnostics** | Running deep-dive operational diagnostics on a benchmark event (`data/events/` or a newly downloaded event in `data/cache/`): predicted event timelines, reliability/calibration diagrams, and spatial/physical attribution maps. **Wrapped by the gold-standard reference skill in `skills/`.** | Tier 3 (`data/events/` or `data/cache/`)<br/>$\le 30\,\text{s}$ |
+- **`notebooks/01_data_download_and_ingestion.ipynb`** — Querying, downloading/caching, and inspecting project data or external datasets, checking physical units, coordinate frames, and metadata.
+- **`notebooks/02_preprocessing_and_model_inputs.ipynb`** — Calibrating observations, handling data gaps, co-aligning channels/catalogs, and assembling inputs for the project's models.
+- **`notebooks/03_running_model_predictions.ipynb`** — Loading a pretrained project model and running inference/predictions on a target event or time interval, comparing against baseline methods.
+- **`notebooks/04_analyzing_precomputed_artifacts.ipynb`** — Loading and exploring precomputed project artifacts (e.g., embeddings, prediction catalogs, derived physical quantities) combined with auxiliary or participant-brought data.
+- **`notebooks/05_event_diagnostics_and_visualization.ipynb`** — End-to-end case study on a benchmark event with diagnostic plots, uncertainty intervals, and physical interpretation.
 
-> **Mandatory Companion Index (`notebooks/README.md`)**:
-> Create `notebooks/README.md` containing a single markdown lookup table:
-> `| Notebook | Science / Operational Question Answered | Key Toolkit Functions & Pretrained Artifacts Used | Data Source / Tier Used | Expected Runtime |`
-> Coding agents read `@notebooks/README.md` first whenever a participant asks *"How do I download data, run predictions, or analyze artifacts with this toolkit?"*
+Include a brief index file (`notebooks/README.md`) mapping each notebook filename to the scientific/operational task it solves and the main `<toolkit>` functions it uses, so coding agents can quickly locate the right reference notebook.
 
-#### Group 2: The 3 Backup Science Case Starter Notebooks (`backup_cases/`)
-For participants who need a ready-made project at the Module 3 Plan Gate (`A3`)—including anyone whose custom external internet data source turns out to be offline or too large to download during the session—provide three folders (`backup_cases/case_alpha/`, `case_beta/`, `case_gamma/`), each containing:
-- A pre-approved `PLAN.md` scoped to $\le 5$ hours (using pretrained models/artifacts with zero model retraining) and its target `M6` skill name,
-- A starter notebook `starter_analysis.ipynb` (and 15-line `starter_check.py`) that points to both the remote query parameters and the pre-cached local `data/` and `data/artifacts/` slices so the participant can immediately begin prompting their coding agent in Module 4.
-
-#### Mandatory Engineering Standards for All Workshop Notebooks
-Every notebook in `notebooks/` and `backup_cases/` **MUST** satisfy four rules:
-1. **Top Configuration Cell**: Cell 1 of every notebook must define all configurable variables (`DATA_DIR`, `ARTIFACTS_DIR`, `CACHE_DIR`, `USE_PREFETCHED_CACHE`, `MODEL_CHECKPOINT`, `EVENT_ID`, `START_DATE`, `END_DATE`, `CHANNELS`, `HORIZON_HOURS`, `OUTPUT_DIR`) with sensible defaults so the coding agent can inspect and modify operational or download parameters in one predictable location.
-2. **Short, Self-Contained Cells ($\le 25$ lines)**: Break long cells into logical steps with descriptive markdown headers (`## Step 1: Query & Cache Data...`, `## Step 2: Load & Calibrate...`, `## Step 3: Run Pretrained Model Inference...`). Move complex download loops, adapters, or plotting boilerplate into `src/<toolkit>/`.
-3. **Committed Outputs**: Execute all tutorial notebooks before committing so participants and agents can inspect existing cell outputs and figures immediately upon cloning.
-4. **Idempotent Caching & Bounded Download Guarantee**: Any cell that downloads data from the internet must (a) check `data/cache/` first so subsequent notebook runs execute in $< 60$ seconds with zero redundant network traffic, (b) enforce a size limit (`max_size_mb`), and (c) fall back cleanly to pre-staged data if offline.
+#### Notebook Guidelines for Agent Compatibility
+1. **Top Configuration Cell**: Define configurable inputs (data paths, date ranges, event IDs, model checkpoints, output directories) in the first code cell.
+2. **Short, Modular Cells ($\le 25$ lines)**: Keep cells concise and move complex helper logic into `src/<toolkit>/`.
+3. **Pre-Executed Outputs**: Commit notebooks with their outputs and figures already rendered so participants and agents can inspect them immediately.
+4. **Local Caching for Downloads**: Ensure any data download step caches files locally so re-running a notebook does not re-download data.
 
 ---
 
