@@ -7,8 +7,8 @@ This document provides instructions for project developers to organize and prepa
 - **Workshop in AI-Assisted Notebook Mode**: Participants (science users) interact with the project through Jupyter notebooks by prompting an AI coding agent—rather than writing code by hand—to download and ingest data, run the project's pretrained models and artifacts (without retraining), execute modified notebooks, and validate scientific results.
 - **The Three Deliverables Each Team Must Prepare ([Section 3](#3-planning-workshop-materials))**:
   1. **Scientific Goals & Data/Compute Requirements ([§3.1](#31-deliverable-1-scientific-goals-benchmark-cases--hybrid-dataartifact-architecture))**: Define the operational and scientific learning goals for participants along with data volume and compute estimates for both project-provided and participant-brought datasets.
-  2. **Sequential Workshop Notebooks ([§3.2](#32-deliverable-2-list-of-notebooks-to-be-developed-and-organized))**: Provide a numbered sequence of modular, pre-executed Jupyter notebooks (`01_`, `02_`, ...) and a brief `notebooks/README.md` index covering data ingestion, preprocessing, pretrained model inference, and artifact analysis.
-  3. **Participant Guide & Prompt Examples ([§3.3](#33-deliverable-3-participant-guide--how-to-interact-with-notebooks--prompt-the-coding-agent))**: Prepare a `participant-guide.md` containing practical workflow guidelines and illustrative prompt templates that show science users how to direct the coding agent across the workshop modules.
+  2. **Workshop Notebooks List ([§3.2](#32-deliverable-2-list-of-notebooks-to-be-developed-and-organized))**: Provide a numbered sequence of modular, pre-executed Jupyter notebooks (`01_`, `02_`, ...) together with a brief explanation of what each one would do (not the actual notebook, just the list and description).
+  3. **Draft Participant Guide & Prompt Examples ([§3.3](#33-deliverable-3-draft-participant-guide--how-to-interact-with-notebooks--prompt-the-coding-agent))**: Prepare an initial draft of `participant-guide.md` outlining practical workflow guidelines and preliminary prompt examples showing how science users will direct the coding agent across the workshop modules (to be refined into the final guide once the notebooks are built).
 
 ---
 
@@ -52,7 +52,7 @@ To make the agent-mediated notebook mechanics work reliably across 15–25 parti
 
 ---
 
-## 2. Structure of the Workshop: Modules `M0` to `M6` (The GRASP Ladder)
+## 2. Suggested Structure of the Workshop: Modules `M0` to `M6` (The GRASP Ladder)
 
 The 1.5-day curriculum follows the **GRASP** progression (**G**round $\to$ **R**eproduce $\to$ **A**rticulate $\to$ **S**olve $\to$ **P**rove & Skillify). Across modules `M0`–`M6`, the coding agent's autonomy expands only as the science user demonstrates mastery of the toolkit, its pretrained models/artifacts, and its physical assumptions.
 
@@ -70,7 +70,7 @@ The 1.5-day curriculum follows the **GRASP** progression (**G**round $\to$ **R**
 
 ## 3. Planning workshop materials
 
-Below is the structured plan for the development team to design and prepare the workshop materials, organized around **three primary deliverables**: **(3.1) Scientific Goals & Data/Compute Requirements**, **(3.2) Workshop Notebooks**, and **(3.3) The Participant Guide & Suggested Prompts**.
+Below is the structured plan for the development team to design and prepare the workshop materials, organized around **three primary deliverables**: **(3.1) Scientific Goals & Data/Compute Requirements**, **(3.2) Workshop Notebooks List**, and **(3.3) A Draft Participant Guide & Suggested Prompts**.
 
 ---
 
@@ -120,15 +120,15 @@ Include a brief index file (`notebooks/README.md`) mapping each notebook filenam
 
 ---
 
-### 3.3 Deliverable 3: Participant Guide — How to Interact with Notebooks & Prompt the Coding Agent
+### 3.3 Deliverable 3: Draft Participant Guide — How to Interact with Notebooks & Prompt the Coding Agent
 
-Prepare a `participant-guide.md` that explains to science users **how to interact with your notebooks, pretrained models/artifacts, and datasets through a coding agent**, along with **example prompts** they can adapt during the workshop.
+Prepare an **initial draft** of `participant-guide.md` (not the final, definitive version) that outlines how science users will **interact with your planned notebooks, pretrained models/artifacts, and datasets through a coding agent**, along with **preliminary example prompts** they might use during the workshop. This draft serves as a working blueprint that will be refined and finalized later once the notebooks and codebase are ready.
 
-Sections **A** and **B** below are offered as **suggestions and starting templates**—feel free to select, adapt, or simplify the guidelines and prompt examples so they best match your project's actual workflows.
+Sections **A** and **B** below are offered as **suggestions and starting templates** for this draft—feel free to select, adapt, or sketch out only the guidelines and prompt ideas that best match your project's expected workflows.
 
 #### A. Suggested Guidelines for Interacting with Notebooks & Online Data
 
-You may find it helpful to include some of the following practical tips at the beginning of your Participant Guide:
+You may find it helpful to include some of the following practical tips in your draft Participant Guide:
 
 1. **You Direct; The Agent Downloads, Edits, and Runs**:
    - Participants can keep JupyterLab (or VS Code / Colab notebook viewer) open on half their screen to **view** markdown, code diffs, tables, and plots, while running their **AI Coding Agent CLI** (Gemini CLI, Claude Code, Codex) in a terminal on the other half.
@@ -152,7 +152,7 @@ You may find it helpful to include some of the following practical tips at the b
 
 #### B. Suggested Prompt Patterns & Illustrative Examples
 
-Below are **six suggested prompt patterns** across the workshop modules. You can pick the patterns that make sense for your project and adapt the placeholders (`<toolkit>`, notebook names, data sources) into concrete examples for your participants:
+Below are **six suggested prompt patterns** across the workshop modules that you can use as inspiration when sketching out draft prompts for your project. Pick the patterns that make sense for your workflow and adapt the placeholders (`<toolkit>`, planned notebook names, data sources) into rough draft examples—exact function names and file paths can be filled in later as the notebooks are implemented:
 
 ##### Pattern 1: Inspecting & Understanding an Existing Notebook (`M1 · Ground`)
 Participants can prompt the agent to explain what a notebook does scientifically, how it fetches/loads data and runs pretrained models, and what physical assumptions it makes—without executing or modifying files.
