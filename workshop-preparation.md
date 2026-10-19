@@ -12,7 +12,7 @@ This workshop is built around **Jupyter Notebooks (`.ipynb`)** backed by our pro
 
 Unlike a traditional tutorial where participants passively press `Shift+Enter` on pre-written cells—or a traditional hackathon where participants spend hours writing and debugging raw boilerplate code by hand—this workshop uses an **agent-mediated scientific workflow**:
 
-> **Participants do not manually write or edit large blocks of code inside the notebooks.** Instead, they act as **Principal Investigators and Scientific Directors**, issuing grounded natural-language prompts to a coding agent to:
+> **Participants do not manually write or edit large blocks of code inside the notebooks.** Instead, they act as **science users**, issuing grounded natural-language prompts to a coding agent to:
 > 1. **Discover, download, and ingest data**—whether fetching slices from our project's online data archives, downloading external datasets brought by the participant from the internet, or loading pre-staged local benchmark catalogs—using idempotent caching and official toolkit loaders,
 > 2. **Modify, parameterize, and update Jupyter notebooks** (and companion `.py` helper modules) to test new scientific hypotheses, events, or parameter regimes,
 > 3. **Run the notebooks and automated sanity checks**, and
@@ -20,7 +20,7 @@ Unlike a traditional tutorial where participants passively press `Shift+Enter` o
 
 ```mermaid
 flowchart LR
-    Sci["Scientist<br/>(Principal Investigator)"] -->|"1. Grounded Prompt<br/>(@notebooks/..., @src/...)"| Agent["AI Coding Agent<br/>(Gemini CLI / Claude Code)"]
+    Sci["Participant<br/>(Science User)"] -->|"1. Grounded Prompt<br/>(@notebooks/..., @src/...)"| Agent["AI Coding Agent<br/>(Gemini CLI / Claude Code)"]
     Agent -->|"2. Proposes Plan, Estimates<br/>Download Size & Cites file:line"| Sci
     Sci -->|"3. Approves Plan &<br/>Physical Assumptions"| Agent
     Agent -->|"4. Downloads/Caches Data, Updates<br/>.ipynb & work/<name>/src/*.py"| NB["Jupyter Notebooks &<br/>Toolkit Pipeline"]
@@ -29,13 +29,6 @@ flowchart LR
 ```
 
 ### 1.2 Why This Mechanics Changes How Developers Must Prepare Notebooks & Data Access
-
-When human researchers read a messy notebook or fetch data manually, they mentally fill in missing units, implicit coordinate frames, or download constraints. **When a coding agent reads a messy notebook or is told to "download data from the internet," it can fail in costly ways.** Left undirected, a coding agent will:
-- Launch unbounded downloads (e.g., pulling 100+ GB of full-cadence archival files over conference Wi-Fi) or re-download the same dataset every time a notebook cell is re-executed,
-- Hallucinate broken URLs or write brittle `requests`/`wget` scraping loops instead of using our toolkit's official remote query and download clients,
-- Bypass our toolkit completely to write raw `numpy` / `scipy` / `astropy` / `sunpy` boilerplate from scratch,
-- Fail silently when ingesting participant-brought external datasets whose units, coordinate frames, or time standards differ from the toolkit's expectations,
-- Corrupt `.ipynb` JSON when trying to edit massive 300-line cells inline.
 
 To make the agent-mediated notebook mechanics work reliably across 15–25 participants, **our workshop repository must be engineered for both human scientists and coding agents**:
 1. **Thin, modular notebooks (`notebooks/01_...` to `05_...`)**: Every cell is short ($\le 25$ lines), calls high-level functions from `src/<toolkit>/`, and defines configurable inputs (including data URLs/paths and date ranges) clearly in the top cell.
@@ -58,8 +51,8 @@ The 1.5-day curriculum follows the **GRASP** progression (**G**round $\to$ **R**
 | **M0 · Setup & First Contact** | Day 1<br/>30 min | **Environment Checker** | Operator | Prompt agent to summarize rules loaded from `GEMINI.md`, list the notebooks in `@notebooks/README.md`, verify local data cache + remote archive connectivity via `env/check_setup.py`, and run `pytest -q tests/`. | Green setup & data-access check; `work/<name>/` sandbox initialized. |
 | **M1 · GROUND** | Day 1<br/>60 min | **Tutor**<br/>*(Read-Only)* | Learner & Fact-Checker | Prompt agent to map `@src/<toolkit>/` (including remote data fetchers and local loaders) and `@notebooks/README.md` (`G1`), explain a tutorial notebook cell-by-cell (`G2`), quiz the participant on physical assumptions (`G3`), and assemble a personal cheat sheet (`G4`). | `work/<name>/notes/toolkit_map.md` & `my_cheatsheet.md` with **3 manually verified `file:line` citations**. |
 | **M2 · REPRODUCE** | Day 1<br/>60 min | **Navigator** | Experimentalist | Prompt agent to run a baseline tutorial notebook and summarize its metrics and warnings (`R1`), then plan, create, and run a modified notebook variant that fetches/loads a new event window, channel set, or physical parameter (`R2`) and analyze how the output changed physically. | Executed variant notebook `work/<name>/<variant>.ipynb` + 3-sentence physical interpretation of the perturbation. |
-| **M3 · ARTICULATE** | Day 1<br/>60 min | **Skeptical Collaborator**<br/>*(No Code Allowed)* | Principal Investigator | Prompt agent to challenge scope and draft a 5-hour Minimum Viable Science plan (`PLAN.md`) specifying the exact data source (cached project data, bounded download from project archive, or participant-brought internet dataset), estimated download size, fallback slice, and toolkit functions per step (`A1`–`A2`). | **`PLAN.md` signed off by a facilitator at the Plan Gate (`A3`)** (verifying data download size is feasible) before custom code is written. |
-| **M4 · SOLVE (Sprint 1)** | Day 1<br/>120 min | **Pair Programmer** | Scientific Director & Code Reviewer | Prompt agent in a strict *Plan $\to$ Approve $\to$ Download/Ingest $\to$ Update `.py` & `.ipynb` $\to$ Run $\to$ Sanity-Check* loop (`S1`–`S4`) to fetch and cache required data, adapt any external dataset headers/units, build the analysis notebook, run physical unit/range assertions, and generate a First-Light plot. End Day 1 with `HANDOFF.md` (`S6`). | Cached & validated dataset + **90-Minute First-Light Plot (`figures/first_light.png`)** passing facilitator check + `test_sanity.py` + `HANDOFF.md`. |
+| **M3 · ARTICULATE** | Day 1<br/>60 min | **Skeptical Collaborator**<br/>*(No Code Allowed)* | Science User (Scoping) | Prompt agent to challenge scope and draft a 5-hour Minimum Viable Science plan (`PLAN.md`) specifying the exact data source (cached project data, bounded download from project archive, or participant-brought internet dataset), estimated download size, fallback slice, and toolkit functions per step (`A1`–`A2`). | **`PLAN.md` signed off by a facilitator at the Plan Gate (`A3`)** (verifying data download size is feasible) before custom code is written. |
+| **M4 · SOLVE (Sprint 1)** | Day 1<br/>120 min | **Pair Programmer** | Science User & Code Reviewer | Prompt agent in a strict *Plan $\to$ Approve $\to$ Download/Ingest $\to$ Update `.py` & `.ipynb` $\to$ Run $\to$ Sanity-Check* loop (`S1`–`S4`) to fetch and cache required data, adapt any external dataset headers/units, build the analysis notebook, run physical unit/range assertions, and generate a First-Light plot. End Day 1 with `HANDOFF.md` (`S6`). | Cached & validated dataset + **90-Minute First-Light Plot (`figures/first_light.png`)** passing facilitator check + `test_sanity.py` + `HANDOFF.md`. |
 | **M5 · SOLVE (Sprint 2) + PROVE** | Day 2<br/>85 min | **Hostile Journal Referee** | Defender & Validator | Finish MVP notebook (40 min), then switch agent to Hostile Referee mode (45 min): prompt agent to run domain baselines (`P1`), audit the notebook/code for data leakage & circularity (`P2`), run benchmark event & negative-control checks (`P3`), critique the findings as a hostile referee (`P4`), and add block-bootstrapped error bars (`P5`). | `results_table.md` (with baselines & CIs), `figures/main_result.png`, leakage audit report, and 1 executed referee test. |
 | **M6 · PACKAGE, SKILLIFY & PRESENT** | Day 2<br/>100 min | **Skill Architect & Technical Editor** | Author & Presenter | Prompt agent to clean and re-run the final notebook end-to-end from cached data (`X1`), generate a 1-page `FINDINGS.md` (`X2`), distill the notebook pipeline + `ERROR_LOG.md` into a reusable **Agent Skill** (`skills/<name>/SKILL.md` + CLI script) (`X3`), test a pod-mate's skill in a fresh session (`X4`), and file toolkit GitHub issues (`X5`). | Reproducible `final_verified.ipynb`, `FINDINGS.md`, validated `skills/<name>/`, and 5-min lightning talk. |
 
