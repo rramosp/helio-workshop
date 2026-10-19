@@ -126,47 +126,44 @@ Include a brief index file (`notebooks/README.md`) mapping each notebook filenam
 
 ### 3.3 Deliverable 3: Participant Guide — How to Interact with Notebooks & Prompt the Coding Agent
 
-Developers must prepare `participant-guide.md` (and `prompts/*.md`) so participants have a clear operational manual explaining **how to work with notebooks, pretrained models/artifacts, and remote/external datasets through a coding agent** and **concrete copy-pasteable prompt examples** for every module of the workshop.
+Prepare a `participant-guide.md` that explains to science users **how to interact with your notebooks, pretrained models/artifacts, and datasets through a coding agent**, along with **example prompts** they can adapt during the workshop.
 
-Below is the exact operational framework and prompt catalog that developers must customize with the project's function names, model checkpoints, artifact paths, remote APIs, and science cases.
+Sections **A** and **B** below are offered as **suggestions and starting templates**—feel free to select, adapt, or simplify the guidelines and prompt examples so they best match your project's actual workflows.
 
-#### A. How Participants Interact with Notebooks & Online Data (The Golden Rules for the Participant Guide)
+#### A. Suggested Guidelines for Interacting with Notebooks & Online Data
 
-Include this workflow explanation at the front of the Participant Guide:
+You may find it helpful to include some of the following practical tips at the beginning of your Participant Guide:
 
 1. **You Direct; The Agent Downloads, Edits, and Runs**:
-   - Keep JupyterLab (or VS Code / Colab notebook viewer) open on half your screen to **view** markdown, code diffs, tables, and plots.
-   - Keep your **AI Coding Agent CLI** (Gemini CLI, Claude Code, Codex) open in your terminal in the repository root on the other half of your screen.
-   - Instead of typing code into notebook cells manually, **issue prompts to the agent** referencing exact files with `@` (e.g., `@notebooks/01_ingest_and_calibration.ipynb`, `@src/<toolkit>/io.py`, `@data/README.md`).
-2. **Operate Pretrained Models & Artifacts — Do Not Retrain**:
-   - Your goal in this workshop is to use the project's pretrained models, embeddings, and artifacts as scientific instruments to make predictions and test domain hypotheses on cached or newly downloaded data.
-   - If the coding agent proposes training a new neural network or fitting a model from scratch, stop it: *"Use the pretrained model / precomputed artifacts in `<toolkit>.models` and `data/artifacts/` instead of retraining."*
-3. **The Two-Step Prompting Ritual (*Plan First $\to$ Update & Run Second*)**:
-   - **Never** ask the agent to *"download the data and build my whole analysis notebook"* in one shot.
-   - **Step 1 (Plan, Estimate Size & Cite)**: Ask the agent to inspect the reference notebook and toolkit source, list which cells or `.py` functions need to be created/modified with exact `file:line` citations, run a dry-run size check if downloading remote data, state the physical units/assumptions, and **wait for your approval**.
-   - **Step 2 (Apply, Execute & Inspect)**: Once you approve the plan, instruct the agent to download/cache the data, write reusable processing functions into `work/<name>/src/<module>.py`, update the notebook cells to call those functions, execute the notebook, and report the output predictions, metrics, and figures.
+   - Participants can keep JupyterLab (or VS Code / Colab notebook viewer) open on half their screen to **view** markdown, code diffs, tables, and plots, while running their **AI Coding Agent CLI** (Gemini CLI, Claude Code, Codex) in a terminal on the other half.
+   - Rather than typing code into notebook cells manually, participants can **issue prompts to the agent** referencing relevant files with `@` (e.g., `@notebooks/01_...ipynb`, `@src/<toolkit>/...`, `@data/README.md`).
+2. **Operate Pretrained Models & Artifacts — Avoid Retraining**:
+   - Remind participants that the goal is to use the project's pretrained models, embeddings, and artifacts as scientific instruments to make predictions and test hypotheses on cached or newly downloaded data.
+   - If the coding agent proposes training a new neural network or fitting a model from scratch, participants can redirect it: *"Use the pretrained model / precomputed artifacts in `<toolkit>` instead of retraining."*
+3. **A Two-Step Prompting Habit (*Plan First $\to$ Update & Run Second*)**:
+   - Encourage participants not to ask the agent to *"download the data and build the whole analysis notebook"* in one shot.
+   - **Step 1 (Plan, Estimate Size & Cite)**: Ask the agent to inspect the reference notebook and toolkit source, outline which cells or `.py` functions it plans to create or modify (with `file:line` citations), check file sizes if downloading remote data, and **wait for approval**.
+   - **Step 2 (Apply, Execute & Inspect)**: Once approved, have the agent download/cache the data, update the helper module and notebook cells, execute the notebook, and summarize the output predictions, metrics, and figures.
 4. **Safe Remote Data Downloading (*Dry-Run $\to$ Cache $\to$ Single-File Inspect*)**:
-   - Whether you are pulling from the project's online archive or downloading your own dataset from an external URL/API:
-     1. **Estimate first**: Have the agent query the remote source (`dry_run=True` or `HEAD`/metadata check) and report the file count and total MB before downloading. Keep workshop downloads under **$\sim 500\,\text{MB}$** so you don't spend your 5 hours waiting on Wi-Fi.
-     2. **Cache locally**: Always download into `data/cache/` or `work/<name>/data/` with existence checks so re-running your notebook never re-downloads the data.
-     3. **Inspect 1 sample file before bulk processing**: When bringing external internet data, have the agent download **one** file/chunk first, print its headers/columns, units, timestamp format, and missing-value sentinels, and write an adapter function in `work/<name>/src/` before running the full pipeline.
-5. **Why Reusable Code Goes in `work/<name>/src/*.py` and Plots Stay in `.ipynb`**:
-   - Having the agent edit 200-line downloaders or analysis functions directly inside `.ipynb` JSON is slow, error-prone, and impossible to unit-test with `pytest`.
-   - Instead, instruct the agent: *"Put the downloader/adapter and inference/analysis functions in `work/<name>/src/<module>.py`, write a quick unit test in `work/<name>/tests/`, and keep the notebook cell to 5–10 lines that import the function and plot the result."*
-   - Bonus: In Module 6 (`X3`), wrapping `work/<name>/src/*.py` into a reusable **Agent Skill** takes 5 minutes because your logic is already modular!
+   - When pulling from the project's online archive or downloading a participant-brought dataset from an external URL/API, consider suggesting that participants:
+     1. **Estimate first**: Have the agent check file counts and total size before downloading so workshop sessions aren't stalled by large transfers.
+     2. **Cache locally**: Save downloaded data in a local cache folder (e.g., `data/cache/` or `work/<name>/data/`) so re-running a notebook does not re-download files.
+     3. **Inspect 1 sample file before bulk processing**: For external internet data, have the agent download **one** sample file first to check its headers, units, timestamp format, and missing-value sentinels before processing the full date range.
+5. **Keeping Reusable Code in `work/<name>/src/*.py` and Plots in `.ipynb`**:
+   - Suggest that participants ask the agent to put larger data-ingestion or analysis functions in `work/<name>/src/<module>.py` (with a quick test in `work/<name>/tests/`) while keeping notebook cells short (importing the function and plotting the result). This avoids `.ipynb` JSON editing errors and makes it much easier to package the workflow into a reusable **Agent Skill** in Module 6.
 
 ---
 
-#### B. Catalog of Prompt Patterns & Concrete Examples (To Adapt in `participant-guide.md`)
+#### B. Suggested Prompt Patterns & Illustrative Examples
 
-Developers must provide concrete examples for each of the **six core notebook interaction patterns** below, substituting our toolkit's actual module/function names, pretrained model checkpoints, remote archive APIs, and staged datasets:
+Below are **six suggested prompt patterns** across the workshop modules. You can pick the patterns that make sense for your project and adapt the placeholders (`<toolkit>`, notebook names, data sources) into concrete examples for your participants:
 
 ##### Pattern 1: Inspecting & Understanding an Existing Notebook (`M1 · Ground`)
-Participants prompt the agent to explain what a notebook does scientifically, how it fetches/loads data and runs pretrained models, and what physical assumptions it makes—without executing or modifying files.
+Participants can prompt the agent to explain what a notebook does scientifically, how it fetches/loads data and runs pretrained models, and what physical assumptions it makes—without executing or modifying files.
 
-> **Example Prompt — Cell-by-Cell Scientific Walkthrough (`G2`):**
+> **Illustrative Prompt — Cell-by-Cell Scientific Walkthrough (`G2`):**
 > ```text
-> Walk me through @notebooks/01_ingest_and_calibration.ipynb cell by cell, for a domain scientist who is an intermediate Python programmer.
+> Walk me through @notebooks/01_data_download_and_ingestion.ipynb cell by cell, for a domain scientist who is an intermediate Python programmer.
 > For each cell, state:
 > (a) What it does scientifically (including how it queries, caches, or loads the data),
 > (b) Which `<toolkit>` function it calls and what that function assumes (physical units, data calibration level, coordinate frame, cadence, masking), citing `src/<toolkit>/<file>.py:<line>`, and
@@ -174,18 +171,18 @@ Participants prompt the agent to explain what a notebook does scientifically, ho
 > Keep it under 600 words. Do not execute or modify any files.
 > ```
 >
-> **Example Follow-Up Prompt — Checking Pretrained Model Input Conventions in a Cell:**
+> **Illustrative Follow-Up Prompt — Checking Pretrained Model Input Conventions:**
 > ```text
-> Look closely at Cell 5 of @notebooks/03_pretrained_inference_and_baselines.ipynb and @src/<toolkit>/models.py.
-> What exact channel order, physical units, and intensity scaling does `load_pretrained_model()` expect during inference, and where in `@src/<toolkit>/prep.py` is exposure-time normalization applied? Cite exact `file:line` numbers so I don't feed uncalibrated inputs into the pretrained model.
+> Look closely at Cell 5 of @notebooks/03_running_model_predictions.ipynb and @src/<toolkit>/models.py.
+> What exact channel order, physical units, and intensity scaling does `load_pretrained_model()` expect during inference, and where in `@src/<toolkit>/prep.py` is normalization applied? Cite exact `file:line` numbers so I don't feed uncalibrated inputs into the pretrained model.
 > ```
 
 ##### Pattern 2: Reproducing an Inference Notebook & Perturbing Parameters or Target Events (`M2 · Reproduce`)
-Participants prompt the agent to run a reference inference notebook, inspect its predictions and warnings, and then create and run a modified notebook variant that generates predictions on a new event (either from local `data/events/` or fetched on-demand into `data/cache/`), channel subset, or operational configuration.
+Participants can prompt the agent to run a reference inference notebook, inspect its predictions and warnings, and then create and run a modified notebook variant that generates predictions on a new event or operational configuration.
 
-> **Example Prompt — Baseline Inference Notebook Execution (`R1`):**
+> **Illustrative Prompt — Baseline Inference Notebook Execution (`R1`):**
 > ```text
-> Run @notebooks/03_pretrained_inference_and_baselines.ipynb from top to bottom without modifying its code.
+> Run @notebooks/03_running_model_predictions.ipynb from top to bottom without modifying its code.
 > Report:
 > 1. Total execution time,
 > 2. Every warning emitted during cell execution (including header, coordinate, or NaN warnings), and
@@ -193,24 +190,24 @@ Participants prompt the agent to run a reference inference notebook, inspect its
 > Do not edit any files—just execute and report.
 > ```
 >
-> **Example Prompt — Modifying a Notebook to Fetch & Predict on a New Event (`R2`):**
+> **Illustrative Prompt — Modifying a Notebook to Fetch & Predict on a New Event (`R2`):**
 > ```text
-> I want to create a modified version of @notebooks/05_event_diagnostics_and_attribution.ipynb that runs the pretrained model and spatial attribution on a different active event (`<START_DATE>` to `<END_DATE>`).
+> I want to create a modified version of @notebooks/05_event_diagnostics_and_visualization.ipynb that runs the pretrained model and diagnostics on a different active event (`<START_DATE>` to `<END_DATE>`).
 >
 > Step 1 (Plan & Data Check only — do NOT edit files or download bulk data yet):
-> - Check `@data/README.md` to see if this date range is already in `data/events/`. If not, run `<toolkit>.io.fetch_data(..., dry_run=True)` to check how many files and megabytes it would take to download into `data/cache/`.
-> - List every cell and parameter in `@notebooks/05_event_diagnostics_and_attribution.ipynb` that must change (file paths/query dates, event identifier, plotting bounds).
-> - Flag any physical or calibration assumptions in `<toolkit>` that could behave differently for this event (e.g., instrument degradation epoch, viewing geometry, cadence).
+> - Check `@data/README.md` to see if this date range is already available locally. If not, check how many files and megabytes it would take to download into `data/cache/`.
+> - List every cell and parameter in `@notebooks/05_event_diagnostics_and_visualization.ipynb` that should change (file paths/query dates, event identifier, plotting bounds).
+> - Flag any physical or calibration assumptions in `<toolkit>` that could behave differently for this event.
 > Wait for my approval.
 >
 > Step 2 (After I approve):
-> - Fetch/cache the slice if needed, create `work/<name>/05_event_variant.ipynb`, apply the changes, execute all cells, and summarize how the predicted timeline and attribution map changed between the two events.
+> - Fetch/cache the slice if needed, create `work/<name>/05_event_variant.ipynb`, apply the changes, execute all cells, and summarize how the predicted timeline and diagnostics changed between the two events.
 > ```
 
 ##### Pattern 3: Downloading Remote Data, Ingesting Participant-Brought Datasets & Running Pretrained Predictions (`M4 · Solve`)
-In Module 4, participants may either (a) download a targeted slice from the project's online archive and run the pretrained model on it, or (b) download and adapt an external dataset they brought from the internet to compare against the project's predictions/artifacts, before generating their First-Light diagnostic plot. Developers must include both prompt examples in the Participant Guide:
+In Module 4, participants might either (a) download a targeted slice from the project's online archive and run the pretrained model on it, or (b) download and adapt an external dataset they brought from the internet to compare against the project's predictions/artifacts. Here are suggested prompt templates for both scenarios:
 
-> **Example Prompt 3A — Downloading a New Slice from the Project Archive & Running Pretrained Inference (`S1 — Project Archive`):**
+> **Illustrative Prompt 3A — Downloading a Slice from the Project Archive & Running Pretrained Inference (`S1 — Project Archive`):**
 > ```text
 > We are implementing Step 1 of @work/<name>/PLAN.md:
 > "Fetch and cache observations for `<START_DATE>` to `<END_DATE>` across channels `<CHANNELS>`, construct calibrated input variants (with vs. without `correct_degradation()`), and run `<toolkit>.models.run_inference()` using the pretrained checkpoint."
@@ -225,7 +222,7 @@ In Module 4, participants may either (a) download a targeted slice from the proj
 > Show me the dry-run size estimate and a 6-line implementation plan first, and wait for my approval.
 > ```
 >
-> **Example Prompt 3B — Downloading & Adapting a Participant-Brought Internet Dataset (`S1 — External Data`):**
+> **Illustrative Prompt 3B — Downloading & Adapting a Participant-Brought Internet Dataset (`S1 — External Data`):**
 > ```text
 > For my science project in @work/<name>/PLAN.md, I want to download an external dataset from `<URL / API / Zenodo / CDAWeb / VSO>` and analyze/evaluate it alongside `<toolkit>`'s pretrained model predictions and artifacts in `data/artifacts/`.
 >
@@ -245,7 +242,7 @@ In Module 4, participants may either (a) download a targeted slice from the proj
 > 3. Update `work/<name>/analysis.ipynb` to import `external_adapter`, ingest the data, and print a verification summary.
 > ```
 >
-> **Example Prompt 3C — Adding a First-Light Diagnostic Plot Cell (`S2`):**
+> **Illustrative Prompt 3C — Adding a First-Light Diagnostic Plot Cell (`S2`):**
 > ```text
 > Add a "First-Light Diagnostic" section to `work/<name>/analysis.ipynb` (and save the figure to `work/<name>/figures/first_light.png`) that plots:
 > 1. Top row: a multi-panel view at `<benchmark_timestamp_utc>` showing each ingested physical channel in its calibrated physical units alongside the pretrained model's spatial attribution/output using `<toolkit>`'s plotting helpers, with coordinate grid overlays and labeled axes.
@@ -254,9 +251,9 @@ In Module 4, participants may either (a) download a targeted slice from the proj
 > ```
 
 ##### Pattern 4: Auditing the Participant's Notebook for Evaluation Circularity & Data Alignment Bugs (`M5 · Prove`)
-Participants prompt the agent to cross-check their notebook and helper modules (including any downloaded/external data joins) against the toolkit's domain rules to catch subtle methodological flaws.
+Participants can prompt the agent to cross-check their notebook and helper modules (including any downloaded/external data joins) against the toolkit's domain rules to help catch subtle methodological flaws.
 
-> **Example Prompt — Auditing the Notebook for Lookahead, Alignment & Physical Circularity (`P2`):**
+> **Illustrative Prompt — Auditing the Notebook for Lookahead, Alignment & Physical Circularity (`P2`):**
 > ```text
 > Audit my analysis notebook `@work/<name>/analysis.ipynb` and helper modules in `@work/<name>/src/` for evaluation circularity, timestamp misalignment, and physical bugs. Check every item below and cite exact cell numbers and `file:line`:
 > 1. Forecast horizon lookahead: for issue time `t0`, do any input channels, rolling statistics, or external catalog joins use observations recorded after `t0`?
@@ -268,9 +265,9 @@ Participants prompt the agent to cross-check their notebook and helper modules (
 > ```
 
 ##### Pattern 5: Running Baselines, Uncertainty Quantification & Hostile Referee Tests in the Notebook (`M5 · Prove`)
-Participants prompt the agent to augment their notebook with fair baselines, block-bootstrapped error bars, and a fast empirical check addressing a journal referee's objection.
+Participants can prompt the agent to augment their notebook with fair baselines, block-bootstrapped error bars, and a quick empirical check addressing a potential referee question.
 
-> **Example Prompt — Adding Baselines & Block-Bootstrapped Error Bars (`P1` + `P5`):**
+> **Illustrative Prompt — Adding Baselines & Block-Bootstrapped Error Bars (`P1` + `P5`):**
 > ```text
 > Update `work/<name>/analysis.ipynb` to add a "Baseline & Uncertainty Evaluation" section:
 > 1. Over the exact same evaluation timestamps and pre-calibrated threshold policy, compare our pretrained model predictions/variants against `<toolkit>.models.PersistenceBaseline` and `<toolkit>.models.ClimatologyBaseline`.
@@ -280,9 +277,9 @@ Participants prompt the agent to augment their notebook with fair baselines, blo
 > ```
 
 ##### Pattern 6: Cleaning the Notebook & Distilling It into a Reusable Agent Skill (`M6 · Skillify`)
-Once the science is proven, participants prompt the agent to clean up their notebook for end-to-end reproducibility (running cleanly from cached data and pretrained artifacts) and package the workflow into `skills/<skill-name>/`.
+Once the science results are ready, participants can prompt the agent to clean up their notebook for end-to-end reproducibility (running cleanly from cached data and pretrained artifacts) and package the workflow into `skills/<skill-name>/`.
 
-> **Example Prompt — Final Notebook Cleanup & End-to-End Verification (`X1`):**
+> **Illustrative Prompt — Final Notebook Cleanup & End-to-End Verification (`X1`):**
 > ```text
 > Restructure `@work/<name>/analysis.ipynb` into 6 clean, well-documented sections:
 > 1. Setup, Configurable Parameters & Cached Data/Artifact Paths
@@ -295,7 +292,7 @@ Once the science is proven, participants prompt the agent to clean up their note
 > Confirm that `results_table.md` and `figures/main_result.png` are regenerated identically with zero errors.
 > ```
 >
-> **Example Prompt — Distilling the Validated Notebook Workflow into an Agent Skill (`X3`):**
+> **Illustrative Prompt — Distilling the Validated Notebook Workflow into an Agent Skill (`X3`):**
 > ```text
 > Read the gold-standard reference skill `@skills/<reference-skill>/SKILL.md`, `@templates/SKILL_TEMPLATE.md`, my validated code in `@work/<name>/src/`, my notebook `@work/<name>/analysis.ipynb`, and `@work/<name>/ERROR_LOG.md`.
 > We are going to package my validated operational workflow into a reusable Agent Skill under `skills/<skill-name>/` so any science user can run this prediction/analysis pipeline on a new date range, event, or external dataset in a single prompt.
