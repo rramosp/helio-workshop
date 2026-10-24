@@ -12,13 +12,11 @@
 **In local machine**:
 - point your local browser to localhost:8833 to manual interact with notebooks
 - cd to a selected folder and create AGENTS.md with following content:
+      the contents of the current folder are exposed through a jupyter-lab server running 
+      on localhost:8833 from my home folder.
 
-    the contents of the current folder are exposed through a jupyter-lab server running 
-    on localhost:8833 from my home folder.
-
-    refer any code question that I make to this folder, like running, modifying or creating 
-    notebooks, python code, documents, etc.  
-
+      refer any code question that I make to this folder, like running, modifying or creating 
+      notebooks, python code, documents, etc.  
 - start your AI Assistant (CLI or desktop)
 
 
